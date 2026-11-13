@@ -41,6 +41,26 @@ button{font:inherit;color:inherit;cursor:pointer}
 .cell.today{border-color:var(--accent);font-weight:700}
 .bar{width:70%;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--accent)}
+.wkcard{display:block;width:100%;text-align:left;background:none;border:0;padding:0}
+.wkcard h2{margin-bottom:12px}
+.mini{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px}
+.mini div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.8rem;color:var(--mute)}
+.mini .tod{color:var(--ink);font-weight:700}
+.vb{width:100%;max-width:30px;height:44px;border-radius:6px;background:var(--line);display:flex;align-items:flex-end;overflow:hidden}
+.vb i{display:block;width:100%;background:var(--accent)}
+.vb.up{background:none;border:1px dashed var(--line)}
+.kind{font:700 1.5rem/1.25 "Bricolage Grotesque",system-ui,sans-serif;color:var(--accent);margin:12px 0 0}
+h3.sh{margin:0 0 12px;font:700 1.1rem "Bricolage Grotesque",system-ui,sans-serif}
+.drow{display:grid;grid-template-columns:64px 1fr 100px;gap:10px;align-items:center;width:100%;background:none;border:0;border-top:1px solid var(--line);padding:8px 0;min-height:44px;text-align:left}
+.drow:first-of-type{border-top:0}
+.drow .bar{width:100%;height:10px;border-radius:5px}
+.drow .r{text-align:right;color:var(--mute);font-size:.9rem}
+.drow.up{opacity:.6}
+.drow.tod b{font-weight:700}
+.callout{border:2px solid var(--accent);border-radius:12px;padding:12px 14px;margin:0 0 8px}
+.mrow{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding:10px 0}
+.mrow span:last-child{color:var(--mute);white-space:nowrap}
+.big{font:700 3rem/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--accent)}
 .sub{color:var(--mute);margin:2px 0 0;font-size:.95rem}
 ul{list-style:none;margin:14px 0 0;padding:0}
 li{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);min-height:48px}
@@ -92,6 +112,7 @@ summary{cursor:pointer;font-weight:500}
       <li>Tap “Edit schedule” to make it yours. Type into any hour, save, then choose whether it applies to just that day or more days.</li>
       
       <li>Finish everything in a day to build your streak.</li>
+      <li>Tap the “This week” card to see how your week went, which habits slipped, and how it compares to last week.</li>
       <li>Open “Appearance” to pick your colors or switch to dark mode.</li>
     </ol>
     <p class="sub">Everything is saved in this browser on this device, so your planner stays private to you.</p>
@@ -104,6 +125,9 @@ summary{cursor:pointer;font-weight:500}
       <div class="best"><b id="best">0</b><span>best streak</span></div>
     </div>
     <p class="sub" id="streakNote"></p>
+  </section>
+  <section aria-label="This week">
+    <button class="wkcard" id="wkCard"><h2>This week</h2><div class="mini" id="mini"></div><div class="head" style="margin:0"><span class="sub" id="wkLine" style="margin:0"></span><span aria-hidden="true">›</span></div></button>
   </section>
   <section aria-label="Calendar">
     <div class="head"><h2 id="month"></h2>
@@ -119,6 +143,18 @@ summary{cursor:pointer;font-weight:500}
       </div>
     </details>
   </section>
+</div>
+
+<div class="page" id="week" hidden>
+  <section aria-label="Week summary">
+    <div class="head"><button class="btn" id="wkBack">‹ Calendar</button>
+      <div class="nav"><button class="btn" id="wkPrev" aria-label="Previous week">‹</button><button class="btn" id="wkNext" aria-label="Next week">›</button></div></div>
+    <h2 id="wkRange"></h2><p class="sub" id="wkRel"></p>
+    <p class="kind" id="wkKind"></p>
+  </section>
+  <section aria-label="Day by day"><h3 class="sh">Day by day</h3><div id="wkDays"></div><p class="sub" id="wkBest" style="margin-top:10px"></p></section>
+  <section aria-label="Missed"><h3 class="sh">Missed</h3><div id="wkMiss"></div></section>
+  <section aria-label="Overall score"><h3 class="sh">Overall</h3><div class="big" id="wkPct"></div><p class="sub" id="wkTot"></p><p class="sub" id="wkCmp" style="color:var(--ink);font-weight:500"></p></section>
 </div>
 
 <div class="page" id="day" hidden>
@@ -235,9 +271,9 @@ function renderStreak(){
 function renderCal(){
   $("month").textContent=view.toLocaleDateString("en-US",{month:"long",year:"numeric"});
   const g=$("cal");g.innerHTML="";
-  ["M","T","W","T","F","S","S"].forEach(x=>g.appendChild(mk("div","dow",x)));
+  ["S","M","T","W","T","F","S"].forEach(x=>g.appendChild(mk("div","dow",x)));
   const first=new Date(view.getFullYear(),view.getMonth(),1),days=new Date(view.getFullYear(),view.getMonth()+1,0).getDate();
-  for(let i=0;i<dow(first);i++)g.appendChild(mk("div","cell blank"));
+  for(let i=0;i<first.getDay();i++)g.appendChild(mk("div","cell blank"));
   const tk=key(today0());
   for(let n=1;n<=days;n++){
     const d=new Date(view.getFullYear(),view.getMonth(),n),tot=items(d).length,c=count(d);
@@ -310,7 +346,7 @@ function openEdit(d){edDate=d;OR=clone(dayMap(d));DR=clone(OR);$("confirm").hidd
 function updateDirty(){const x=isDirty();$("save").disabled=!x;$("discard").disabled=!x}
 function targets(who,span){
   const b=edDate,out=[];if(who==="one")return[b];
-  const end=span==="week"?addDays(b,6-dow(b)):span==="month"?new Date(b.getFullYear(),b.getMonth()+1,0):new Date(b.getFullYear(),11,31);
+  const end=span==="week"?addDays(b,6-b.getDay()):span==="month"?new Date(b.getFullYear(),b.getMonth()+1,0):new Date(b.getFullYear(),11,31);
   for(let d=b;d<=end;d=addDays(d,1))if(who==="all"||dow(d)===dow(b))out.push(d);
   return out;
 }
@@ -340,12 +376,69 @@ $("keep").onclick=()=>{$("confirm").hidden=true};
 $("apply").onclick=applyChanges;
 $("confirm").onchange=updatePanel;
 $("discard").onclick=()=>{DR=clone(OR);$("confirm").hidden=true;$("applyMsg").textContent="";renderEdit()};
+const weekStart=d=>addDays(d,-d.getDay());
+let wkStart=weekStart(today0());
+function weekStats(start){
+  const t=today0(),days=[],miss={};let tot=0,dn=0;
+  for(let i=0;i<7;i++){
+    const d=addDays(start,i),n=items(d).length,c=count(d),future=d>t;
+    days.push({d,n,c,future});
+    if(!future){tot+=n;dn+=c;const a=done[key(d)]||[];
+      items(d).forEach(([h,nm])=>{const m=miss[nm]||(miss[nm]={n:0,c:0});m.n++;if(a.includes(id(h,nm)))m.c++})}
+  }
+  return{days,tot,c:dn,pct:tot?Math.round(dn/tot*100):null,miss};
+}
+function renderWeekCard(){
+  const s=weekStats(weekStart(today0())),box=$("mini"),tk=today0().getTime();box.innerHTML="";
+  s.days.forEach(x=>{
+    const c=mk("div",x.d.getTime()===tk?"tod":""),vb=mk("span","vb"+(x.future?" up":"")),i=document.createElement("i");
+    i.style.height=(x.n?x.c/x.n*100:0)+"%";vb.appendChild(i);c.appendChild(vb);c.appendChild(mk("span",null,"SMTWTFS"[x.d.getDay()]));box.appendChild(c);
+  });
+  const line=s.tot?s.c+" of "+s.tot+" done ("+s.pct+"%)":"Nothing scheduled yet this week";
+  $("wkLine").textContent=line;$("wkCard").setAttribute("aria-label","This week, "+line+". Open weekly summary");
+}
+function renderWeek(){
+  const st=wkStart,s=weekStats(st),en=addDays(st,6),diffW=Math.round((st-weekStart(today0()))/604800000);
+  $("wkRange").textContent=fmtShort(st)+" – "+fmtShort(en);
+  $("wkRel").textContent=diffW===0?"This week":diffW===-1?"Last week":diffW===1?"Next week":"";
+  const anyFuture=s.days.some(x=>x.future),allFuture=s.days.every(x=>x.future),p=s.pct;let k;
+  if(allFuture)k="Not started yet. Plenty of room to make it a good one.";
+  else if(p==null)k="Nothing was scheduled this week.";
+  else if(!anyFuture)k=p>=80?"Strong week":p>=60?"Solid week":p>=40?"A mixed week, and that’s okay":p>=15?"Rough one, fresh start Sunday":"A quiet week, fresh start Sunday";
+  else k=p>=80?"Strong start to the week":p>=50?"Going well so far":"Plenty of week left to turn it around";
+  $("wkKind").textContent=k;
+  const dd=$("wkDays");dd.innerHTML="";const tk=today0().getTime();
+  s.days.forEach(x=>{
+    const b=mk("button","drow"+(x.future?" up":"")+(x.d.getTime()===tk?" tod":""));
+    const r=x.future?"Upcoming":x.n?x.c+" of "+x.n:"Nothing scheduled";
+    const bar=mk("span","bar"),i=document.createElement("i");i.style.width=(x.n&&!x.future?x.c/x.n*100:0)+"%";bar.appendChild(i);
+    b.appendChild(mk("b",null,x.d.toLocaleDateString("en-US",{weekday:"short"})+" "+x.d.getDate()));b.appendChild(bar);b.appendChild(mk("span","r",r));
+    b.setAttribute("aria-label",x.d.toDateString()+", "+r);b.onclick=()=>{location.hash="day-"+key(x.d)};dd.appendChild(b);
+  });
+  const sc=s.days.filter(x=>!x.future&&x.n>0);let best=null;
+  sc.forEach(x=>{if(!best||x.c/x.n>best.c/best.n)best=x});
+  $("wkBest").textContent=best&&best.c>0?"Best day: "+best.d.toLocaleDateString("en-US",{weekday:"long"})+" ("+best.c+" of "+best.n+" done)":sc.length?"No standout day this week.":"";
+  const mm=$("wkMiss");mm.innerHTML="";
+  const ms=Object.entries(s.miss).map(([nm,v])=>({nm,n:v.n,c:v.c,m:v.n-v.c})).filter(x=>x.m>0).sort((a,b)=>b.m-a.m||a.c/a.n-b.c/b.n);
+  if(!s.tot){mm.appendChild(mk("p","sub","Nothing to show yet."))}
+  else if(!ms.length){mm.appendChild(mk("p","sub","Nothing missed. Every scheduled item was ticked off."))}
+  else{
+    const t=ms[0];mm.appendChild(mk("div","callout","Most skipped: "+t.nm+" was ticked "+t.c+" of "+t.n+" times."));
+    ms.slice(1).forEach(x=>{const r=mk("div","mrow");r.appendChild(mk("span",null,x.nm));r.appendChild(mk("span",null,"ticked "+x.c+" of "+x.n));mm.appendChild(r)});
+  }
+  $("wkPct").textContent=p==null?"–":p+"%";
+  $("wkTot").textContent=s.tot?s.c+" of "+s.tot+" items done"+(anyFuture?" so far":""):"No items scheduled yet";
+  const L=weekStats(addDays(st,-7));
+  $("wkCmp").textContent=p==null?"":L.pct==null?"No schedule last week to compare with.":p>L.pct?"Up "+(p-L.pct)+"% from last week":p<L.pct?"Down "+(L.pct-p)+"% from last week":"Same as last week";
+}
 function route(){
   const h=location.hash,m=/^#day-(\d{4})-(\d{2})-(\d{2})$/.exec(h),e=/^#edit-(\d{4})-(\d{2})-(\d{2})$/.exec(h);
-  ["home","day","edit"].forEach(p=>$(p).hidden=true);
-  if(m){sel=new Date(+m[1],+m[2]-1,+m[3]);$("day").hidden=false;renderDay();window.scrollTo(0,0)}
+  ["home","day","edit","week"].forEach(p=>$(p).hidden=true);
+  const w=/^#week-(\d{4})-(\d{2})-(\d{2})$/.exec(h);
+  if(w){wkStart=weekStart(new Date(+w[1],+w[2]-1,+w[3]));$("week").hidden=false;renderWeek();window.scrollTo(0,0)}
+  else if(m){sel=new Date(+m[1],+m[2]-1,+m[3]);$("day").hidden=false;renderDay();window.scrollTo(0,0)}
   else if(e){openEdit(new Date(+e[1],+e[2]-1,+e[3]));$("edit").hidden=false;window.scrollTo(0,0)}
-  else{$("home").hidden=false;$("welcome").hidden=!!load(K.seen,false)&&!showHelp;renderStreak();renderCal();renderLook()}
+  else{$("home").hidden=false;$("welcome").hidden=!!load(K.seen,false)&&!showHelp;renderStreak();renderWeekCard();renderCal();renderLook()}
 }
 $("prev").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);renderCal()};
 $("next").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);renderCal()};
@@ -377,6 +470,10 @@ $("blank").onclick=()=>{
 let showHelp=false;
 $("gotit").onclick=()=>{put(K.seen,true);showHelp=false;$("welcome").hidden=true};
 $("helpBtn").onclick=()=>{showHelp=true;$("welcome").hidden=false;window.scrollTo(0,0)};
+$("wkCard").onclick=()=>{location.hash="week-"+key(weekStart(today0()))};
+$("wkBack").onclick=()=>{location.hash="home"};
+$("wkPrev").onclick=()=>{location.hash="week-"+key(addDays(wkStart,-7))};
+$("wkNext").onclick=()=>{location.hash="week-"+key(addDays(wkStart,7))};
 window.addEventListener("hashchange",route);
 applyLook();route();
 </script>
