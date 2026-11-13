@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Week, Ticked Off</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--h:140;--s:14%;--a:225;--as:65%;
+--bg:hsl(var(--h) var(--s) 93%);--surface:hsl(var(--h) var(--s) 98%);--ink:hsl(var(--h) calc(var(--s)*1.2) 14%);--mute:hsl(var(--h) calc(var(--s)*.5) 41%);--line:hsl(var(--h) var(--s) 84%);--accent:hsl(var(--a) var(--as) 48%);--on-accent:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:hsl(var(--h) var(--s) 9%);--surface:hsl(var(--h) var(--s) 13%);--ink:hsl(var(--h) var(--s) 92%);--mute:hsl(var(--h) var(--s) 62%);--line:hsl(var(--h) var(--s) 21%);--accent:hsl(var(--a) var(--as) 72%);--on-accent:#10161A}}
+:root[data-theme="dark"]{--bg:hsl(var(--h) var(--s) 9%);--surface:hsl(var(--h) var(--s) 13%);--ink:hsl(var(--h) var(--s) 92%);--mute:hsl(var(--h) var(--s) 62%);--line:hsl(var(--h) var(--s) 21%);--accent:hsl(var(--a) var(--as) 72%);--on-accent:#10161A}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "DM Sans",system-ui,sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+.page{display:grid;gap:16px}
+.page[hidden]{display:none}
+h1,h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;margin:0;letter-spacing:-.01em}
+h1{font-size:1.6rem}
+h2{font-size:1.4rem;font-weight:700}
+section{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+.nav{display:flex;gap:6px;flex-wrap:wrap}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{background:none;border:1px solid var(--line);border-radius:8px;padding:6px 12px;min-height:36px}
+.btn:hover{border-color:var(--ink)}
+.btn.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.btn.main{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.streak{display:flex;gap:28px;align-items:flex-end}
+.streak b{font:700 2.6rem/1 "Bricolage Grotesque",system-ui,sans-serif;display:block;color:var(--accent)}
+.streak span{color:var(--mute);font-size:.9rem}
+.streak .best b{font-size:1.6rem;color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{text-align:center;font-size:.8rem;color:var(--mute);padding-bottom:4px}
+.cell{aspect-ratio:1/1;border:1px solid transparent;border-radius:10px;background:none;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:6px 4px 7px}
+.cell:hover{background:var(--bg)}
+.cell.blank{visibility:hidden}
+.cell.today{border-color:var(--accent);font-weight:700}
+.bar{width:70%;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.sub{color:var(--mute);margin:2px 0 0;font-size:.95rem}
+ul{list-style:none;margin:14px 0 0;padding:0}
+li{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);min-height:48px}
+li:first-child{border-top:0}
+li label{display:flex;align-items:center;gap:12px;flex:1;padding:10px 0;cursor:pointer}
+.t{width:64px;color:var(--mute);font-size:.9rem;flex:none}
+.free{color:var(--mute);opacity:.55;padding-left:36px}
+input[type=checkbox]{appearance:none;width:24px;height:24px;border:2px solid var(--mute);border-radius:7px;flex:none;margin:0;display:grid;place-content:center;cursor:pointer}
+input[type=checkbox]:checked{background:var(--accent);border-color:var(--accent)}
+input[type=checkbox]:checked::after{content:"";width:6px;height:11px;border:solid var(--on-accent);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+input:checked+.n{text-decoration:line-through;color:var(--mute)}
+.n{font-size:1.05rem}
+.done-msg{margin-top:12px;color:var(--accent);font-weight:500;min-height:1.5em}
+input[type=text],select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px;width:100%}
+li input[type=text]{border-color:transparent;background:transparent;padding-left:0}
+li input[type=text]:focus,li input[type=text]:not(:placeholder-shown){background:var(--bg);padding-left:10px}
+.row{display:flex;gap:12px;margin-top:14px}
+.row label{flex:1;font-size:.9rem;color:var(--mute)}
+details{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-weight:500}
+.sw{width:36px;height:36px;border-radius:50%;border:2px solid var(--surface);padding:0;box-shadow:0 0 0 1px var(--line)}
+.sw.on{box-shadow:0 0 0 3px var(--ink)}
+.stack{display:grid;gap:10px;margin-top:12px}
+.panel{margin-top:16px;border:2px solid var(--accent);border-radius:12px;padding:14px;display:grid;gap:12px}
+.panel[hidden],.panel fieldset[hidden]{display:none}
+.panel h3{margin:0;font:700 1.1rem "Bricolage Grotesque",system-ui,sans-serif}
+.panel fieldset{border:0;margin:0;padding:0;display:grid;gap:4px}
+.panel legend{font-weight:500;padding:0;margin-bottom:4px}
+.panel label.o{display:flex;gap:10px;align-items:center;min-height:36px;cursor:pointer}
+.panel input[type=radio]{accent-color:var(--accent);width:18px;height:18px;margin:0}
+.d{font-size:.95rem;color:var(--mute)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn:disabled{opacity:.45;cursor:default}
+.welcome{border-color:var(--accent)}
+.welcome p{margin:0 0 10px}
+.welcome ol{margin:0 0 12px;padding-left:20px;display:grid;gap:6px}
+</style>
+</head>
+<body>
+<main>
+<div class="page" id="home">
+  <h1>My week, ticked off</h1>
+  <section class="welcome" id="welcome" hidden aria-label="Welcome">
+    <h2>Welcome!</h2>
+    <p>So I’ve been enjoying productive days and thought this would be a fun way to get you to enjoy them too!</p>
+    <p class="sub">Here’s how to get started:</p>
+    <ol>
+      <li>Tap any date on the calendar to open that day, then tick things off as you do them.</li>
+      <li>Tap “Edit schedule” to make it yours. Type into any hour, save, then choose whether it applies to just that day or more days.</li>
+      
+      <li>Finish everything in a day to build your streak.</li>
+      <li>Open “Appearance” to pick your colors or switch to dark mode.</li>
+    </ol>
+    <p class="sub">Everything is saved in this browser on this device, so your planner stays private to you.</p>
+    <button class="btn main" id="gotit">Got it, let’s go</button>
+    <p class="sub" style="margin-top:14px">I know it’s currently very rudimentary but I promise it gets the job done. I’ll be rolling out new updates periodically so stay tuned and let me know if you’ve got particular features you’d like me to add. I’d actually love the feedback!</p>
+  </section>
+  <section aria-label="Streak">
+    <div class="streak">
+      <div><b id="streak">0</b><span>day streak</span></div>
+      <div class="best"><b id="best">0</b><span>best streak</span></div>
+    </div>
+    <p class="sub" id="streakNote"></p>
+  </section>
+  <section aria-label="Calendar">
+    <div class="head"><h2 id="month"></h2>
+      <div class="nav"><button class="btn" id="prev" aria-label="Previous month">‹</button><button class="btn" id="todayBtn">Today</button><button class="btn" id="next" aria-label="Next month">›</button></div></div>
+    <div class="grid" id="cal"></div>
+  </section>
+  <section aria-label="Settings">
+    <div class="nav"><button class="btn main" id="editBtn">Edit schedule</button><button class="btn" id="helpBtn">How it works</button></div>
+    <details><summary>Appearance</summary>
+      <div class="stack">
+        <div class="nav" id="pal" role="group" aria-label="Color palette"></div>
+        <div class="nav" id="mode" role="group" aria-label="Light or dark"></div>
+      </div>
+    </details>
+  </section>
+</div>
+
+<div class="page" id="day" hidden>
+  <section aria-label="Day schedule">
+    <div class="head"><button class="btn" id="back">‹ Calendar</button>
+      <div class="nav"><button class="btn" id="pd" aria-label="Previous day">‹</button><button class="btn" id="nd" aria-label="Next day">›</button></div></div>
+    <h2 id="dayTitle"></h2><p class="sub" id="dayCount"></p>
+    <ul id="list"></ul><div class="done-msg" id="msg"></div>
+    <button class="btn" id="editDay">Edit this day’s schedule</button>
+  </section>
+</div>
+
+<div class="page" id="edit" hidden>
+  <section aria-label="Edit schedule">
+    <div class="head"><button class="btn" id="eback">‹ Calendar</button></div>
+    <h2 id="edTitle">Edit schedule</h2>
+    <p class="sub">Type in any hour to add or change something. Clear a box to make that hour free. Nothing changes until you save and choose which days to apply it to.</p>
+    
+    <div class="row">
+      <label>Day starts<select id="fs"></select></label>
+      <label>Day ends<select id="ls"></select></label>
+    </div>
+    <ul id="elist"></ul>
+    <div class="acts"><button class="btn main" id="save" disabled>Save changes</button><button class="btn" id="discard" disabled>Discard changes</button></div>
+    <div class="done-msg" id="applyMsg"></div>
+    <div class="panel" id="confirm" hidden>
+      <h3>Apply these changes?</h3>
+      <div id="diff"></div>
+      <fieldset><legend>Which days</legend>
+        <label class="o"><input type="radio" name="who" value="one" checked><span id="lblOne"></span></label>
+        <label class="o"><input type="radio" name="who" value="weekday"><span id="lblDay"></span></label>
+        <label class="o"><input type="radio" name="who" value="all"><span>Every day</span></label>
+      </fieldset>
+      <fieldset id="spanBox" hidden><legend>For how long</legend>
+        <label class="o"><input type="radio" name="span" value="week" checked><span>Through the end of this week</span></label>
+        <label class="o"><input type="radio" name="span" value="month"><span>Through the end of this month</span></label>
+        <label class="o"><input type="radio" name="span" value="year"><span>Through the end of this year</span></label>
+      </fieldset>
+      <div class="sub" id="willDo"></div>
+      <div class="acts" style="margin:0"><button class="btn main" id="apply">Apply changes</button><button class="btn" id="keep">Keep editing</button></div>
+    </div>
+    <details><summary>Import from a spreadsheet</summary>
+      <p class="sub">In Google Sheets, select your schedule, copy it, and paste it below. Or download it (File › Download › Comma-separated values) and choose the file. The first row needs the day names and the first column the times.</p>
+      <div class="stack">
+        <textarea id="paste" rows="6" aria-label="Pasted schedule" placeholder="Paste your schedule here"></textarea>
+        <input type="file" id="file" accept=".csv,.tsv,.txt" aria-label="Choose a CSV file">
+        <button class="btn main" id="imp">Replace my schedule with this</button>
+        <div class="sub">This replaces your weekly schedule and any changes made to specific days.</div>
+        <div class="sub" id="impMsg"></div>
+      </div>
+    </details>
+    <details><summary>Start from scratch</summary>
+      <div class="stack"><button class="btn" id="blank">Clear my whole schedule</button><div class="sub" id="blankMsg"></div></div>
+    </details>
+  </section>
+</div>
+</main>
+<script>
+const DN=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+// Starter schedule: day 0 = Monday … 6 = Sunday, { hour in 24h: item }
+const DEF=(()=>{const d={};for(let i=0;i<7;i++)d[i]={9:"Breakfast",15:"Lunch",22:"Bedtime"};return d})();
+const PAL={sage:{h:140,s:14,a:225,as:65},ocean:{h:200,s:20,a:195,as:80},rose:{h:345,s:24,a:340,as:70},sunset:{h:28,s:30,a:14,as:80},violet:{h:262,s:22,a:262,as:60},graphite:{h:220,s:0,a:220,as:0}};
+const K={done:"planner-done-v1",sched:"planner-schedule-v2",set:"planner-settings-v1",ov:"planner-overrides-v1",seen:"planner-welcome-v1"};
+const load=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
+const put=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let done=load(K.done,{});
+let SC=load(K.sched,null)||JSON.parse(JSON.stringify(DEF));
+for(let i=0;i<7;i++)SC[i]=SC[i]||{};
+let OV=load(K.ov,{});
+let ST=Object.assign({first:6,last:22,palette:"sage",mode:"auto"},load(K.set,{}));
+const pad=n=>String(n).padStart(2,"0");
+const key=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const dow=d=>(d.getDay()+6)%7;
+const hr=h=>(h%12||12)+":00 "+(h<12?"AM":"PM");
+const dayMap=d=>OV[key(d)]||SC[dow(d)];
+const items=d=>{const o=dayMap(d);return Object.keys(o).map(Number).filter(h=>o[h]).sort((a,b)=>a-b).map(h=>[h,o[h]])};
+const id=(h,n)=>h+"|"+n;
+const count=d=>{const a=done[key(d)]||[];return items(d).filter(([h,n])=>a.includes(id(h,n))).length};
+const complete=d=>{const t=items(d).length;return t>0&&count(d)===t};
+const today0=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate())};
+const addDays=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+const $=s=>document.getElementById(s);
+const mk=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e};
+let sel=today0(),edDate=today0(),DR=null,OR=null;
+let view=new Date(sel.getFullYear(),sel.getMonth(),1);
+function range(){let a=ST.first,b=ST.last;const maps=[...Object.values(SC),...Object.values(OV)];if(DR)maps.push(DR);maps.forEach(m=>{for(const k in m)if(m[k]){a=Math.min(a,+k);b=Math.max(b,+k)}});return[a,b]}
+
+function applyLook(){
+  const p=PAL[ST.palette]||PAL.sage,r=document.documentElement;
+  r.style.setProperty("--h",p.h);r.style.setProperty("--s",p.s+"%");r.style.setProperty("--a",p.a);r.style.setProperty("--as",p.as+"%");
+  if(ST.mode==="auto")r.removeAttribute("data-theme");else r.setAttribute("data-theme",ST.mode);
+}
+function renderLook(){
+  const pal=$("pal");pal.innerHTML="";
+  for(const n in PAL){const p=PAL[n],b=mk("button","sw"+(ST.palette===n?" on":""));
+    b.style.background="hsl("+p.a+" "+Math.max(p.as,25)+"% 48%)";b.setAttribute("aria-label",n);b.setAttribute("aria-pressed",ST.palette===n);
+    b.onclick=()=>{ST.palette=n;put(K.set,ST);applyLook();renderLook()};pal.appendChild(b)}
+  const m=$("mode");m.innerHTML="";
+  [["auto","Match device"],["light","Light"],["dark","Dark"]].forEach(([v,l])=>{
+    const b=mk("button","btn"+(ST.mode===v?" on":""),l);b.onclick=()=>{ST.mode=v;put(K.set,ST);applyLook();renderLook()};m.appendChild(b)});
+}
+function streaks(){
+  const t=today0();let cur=0,d=complete(t)?t:addDays(t,-1);
+  while(complete(d)){cur++;d=addDays(d,-1)}
+  let best=0,run=0;const ks=Object.keys(done).filter(k=>done[k]&&done[k].length).sort();
+  if(ks.length){const[y,m,dd]=ks[0].split("-").map(Number);
+    for(let x=new Date(y,m-1,dd);x<=t;x=addDays(x,1)){if(complete(x)){run++;if(run>best)best=run}else run=0}}
+  return{cur,best:Math.max(best,cur)};
+}
+function renderStreak(){
+  const s=streaks();$("streak").textContent=s.cur;$("best").textContent=s.best;
+  $("streakNote").textContent=complete(today0())?"Today is complete. Nice work.":s.cur?"Finish today’s list to keep it going.":"Complete every item in a day to start a streak.";
+}
+function renderCal(){
+  $("month").textContent=view.toLocaleDateString("en-US",{month:"long",year:"numeric"});
+  const g=$("cal");g.innerHTML="";
+  ["M","T","W","T","F","S","S"].forEach(x=>g.appendChild(mk("div","dow",x)));
+  const first=new Date(view.getFullYear(),view.getMonth(),1),days=new Date(view.getFullYear(),view.getMonth()+1,0).getDate();
+  for(let i=0;i<dow(first);i++)g.appendChild(mk("div","cell blank"));
+  const tk=key(today0());
+  for(let n=1;n<=days;n++){
+    const d=new Date(view.getFullYear(),view.getMonth(),n),tot=items(d).length,c=count(d);
+    const b=mk("button","cell"+(key(d)===tk?" today":""));
+    b.setAttribute("aria-label",d.toDateString()+", "+c+" of "+tot+" done");
+    b.innerHTML="<span>"+n+"</span><span class='bar'><i style='width:"+(tot?c/tot*100:0)+"%'></i></span>";
+    b.onclick=()=>{location.hash="day-"+key(d)};g.appendChild(b);
+  }
+}
+function updateCount(){
+  const tot=items(sel).length,c=count(sel);
+  $("dayCount").textContent=tot?c+" of "+tot+" done":"Nothing scheduled yet";
+  $("msg").textContent=tot&&c===tot?"Everything ticked off for this day.":"";
+}
+function renderDay(){
+  $("dayTitle").textContent=sel.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+  const k=key(sel),a=done[k]||[],o=dayMap(sel),ul=$("list");ul.innerHTML="";
+  const[f,l]=range();
+  for(let h=f;h<=l;h++){
+    const li=mk("li");
+    if(!o[h]){li.appendChild(mk("span","t",hr(h)));li.appendChild(mk("span","free","Free"));ul.appendChild(li);continue}
+    const n=o[h],lab=mk("label"),cb=document.createElement("input");cb.type="checkbox";cb.checked=a.includes(id(h,n));
+    cb.onchange=()=>{const cur=new Set(done[k]||[]);cb.checked?cur.add(id(h,n)):cur.delete(id(h,n));done[k]=[...cur];put(K.done,done);updateCount()};
+    lab.appendChild(mk("span","t",hr(h)));lab.appendChild(cb);lab.appendChild(mk("span","n",n));li.appendChild(lab);ul.appendChild(li);
+  }
+  updateCount();
+}
+function renderEdit(){
+  $("edTitle").textContent="Edit "+edDate.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});updateDirty();
+  
+  ["fs","ls"].forEach(s=>{const el=$(s);if(!el.options.length)for(let h=0;h<24;h++){const o=document.createElement("option");o.value=h;o.textContent=hr(h);el.appendChild(o)}});
+  $("fs").value=ST.first;$("ls").value=ST.last;
+  const ul=$("elist");ul.innerHTML="";const[f,l]=range();
+  for(let h=f;h<=l;h++){
+    const li=mk("li"),inp=document.createElement("input");inp.type="text";inp.maxLength=60;inp.placeholder="Free";inp.value=DR[h]||"";
+    inp.setAttribute("aria-label",hr(h));
+    inp.oninput=()=>{const v=inp.value.trim();v?DR[h]=v:delete DR[h];updateDirty()};
+    li.appendChild(mk("span","t",hr(h)));li.appendChild(inp);ul.appendChild(li);
+  }
+}
+function parseTable(text){
+  const dl=text.indexOf("\t")>=0?"\t":",",rows=[];let row=[],c="",q=false;
+  for(let i=0;i<text.length;i++){const ch=text[i];
+    if(q){if(ch==='"'){if(text[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}
+    else if(ch==='"')q=true;else if(ch===dl){row.push(c);c=""}
+    else if(ch==="\n"||ch==="\r"){if(ch==="\r"&&text[i+1]==="\n")i++;row.push(c);rows.push(row);row=[];c=""}
+    else c+=ch}
+  row.push(c);rows.push(row);return rows;
+}
+function doImport(){
+  const rows=parseTable($("paste").value),cols={};
+  const hi=rows.findIndex(r=>r.some(x=>DN.some(n=>x.trim().toLowerCase().startsWith(n.slice(0,3).toLowerCase()))));
+  if(hi<0){$("impMsg").textContent="Couldn’t find day names. Put Monday to Sunday in the first row.";return}
+  rows[hi].forEach((x,ci)=>{const i=DN.findIndex(n=>x.trim().toLowerCase().startsWith(n.slice(0,3).toLowerCase()));if(i>=0)cols[ci]=i});
+  const ns={0:{},1:{},2:{},3:{},4:{},5:{},6:{}};let n=0;
+  for(const r of rows.slice(hi+1)){
+    const m=/^\s*(\d{1,2})(?::\d{2})?\s*([ap]m)?/i.exec(r[0]||"");if(!m)continue;
+    let h=+m[1];const ap=(m[2]||"").toLowerCase();if(ap==="pm"&&h<12)h+=12;if(ap==="am"&&h===12)h=0;if(h>23)continue;
+    for(const ci in cols){const v=(r[ci]||"").trim();if(v){ns[cols[ci]][h]=v;n++}}
+  }
+  if(!n){$("impMsg").textContent="Found the days but no items. Check that the first column has times like 8:00 AM.";return}
+  SC=ns;OV={};put(K.sched,SC);put(K.ov,OV);$("impMsg").textContent="Imported "+n+" items. Your schedule has been replaced.";openEdit(edDate);
+}
+const clone=o=>JSON.parse(JSON.stringify(o));
+const norm=m=>JSON.stringify(Object.keys(m).filter(h=>m[h]).map(Number).sort((a,b)=>a-b).map(h=>[h,m[h]]));
+const isDirty=()=>!!DR&&norm(DR)!==norm(OR);
+const fmtShort=d=>d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+const pick=n=>document.querySelector('input[name="'+n+'"]:checked').value;
+function openEdit(d){edDate=d;OR=clone(dayMap(d));DR=clone(OR);$("confirm").hidden=true;$("applyMsg").textContent="";renderEdit()}
+function updateDirty(){const x=isDirty();$("save").disabled=!x;$("discard").disabled=!x}
+function targets(who,span){
+  const b=edDate,out=[];if(who==="one")return[b];
+  const end=span==="week"?addDays(b,6-dow(b)):span==="month"?new Date(b.getFullYear(),b.getMonth()+1,0):new Date(b.getFullYear(),11,31);
+  for(let d=b;d<=end;d=addDays(d,1))if(who==="all"||dow(d)===dow(b))out.push(d);
+  return out;
+}
+function updatePanel(){
+  const who=pick("who");$("spanBox").hidden=who==="one";
+  const n=targets(who,pick("span")).length;
+  $("willDo").textContent="This will update "+n+(n===1?" day.":" days, starting "+fmtShort(edDate)+".");
+}
+function showConfirm(){
+  const box=$("diff");box.innerHTML="";
+  [...new Set([...Object.keys(OR),...Object.keys(DR)])].map(Number).sort((a,b)=>a-b).forEach(h=>{
+    const o=OR[h]||"",n=DR[h]||"";if(o===n)return;
+    box.appendChild(mk("div","d",hr(h)+": "+(!o?"added “"+n+"”":!n?"removed “"+o+"”":"“"+o+"” → “"+n+"”")));
+  });
+  $("lblOne").textContent="Only "+fmtShort(edDate);
+  $("lblDay").textContent="Every "+DN[dow(edDate)];
+  updatePanel();$("confirm").hidden=false;$("confirm").scrollIntoView({block:"nearest"});
+}
+function applyChanges(){
+  const ts=targets(pick("who"),pick("span"));
+  ts.forEach(d=>{OV[key(d)]=clone(DR)});put(K.ov,OV);
+  OR=clone(DR);$("confirm").hidden=true;updateDirty();
+  $("applyMsg").textContent="Applied to "+ts.length+(ts.length===1?" day.":" days.");
+}
+$("save").onclick=showConfirm;
+$("keep").onclick=()=>{$("confirm").hidden=true};
+$("apply").onclick=applyChanges;
+$("confirm").onchange=updatePanel;
+$("discard").onclick=()=>{DR=clone(OR);$("confirm").hidden=true;$("applyMsg").textContent="";renderEdit()};
+function route(){
+  const h=location.hash,m=/^#day-(\d{4})-(\d{2})-(\d{2})$/.exec(h),e=/^#edit-(\d{4})-(\d{2})-(\d{2})$/.exec(h);
+  ["home","day","edit"].forEach(p=>$(p).hidden=true);
+  if(m){sel=new Date(+m[1],+m[2]-1,+m[3]);$("day").hidden=false;renderDay();window.scrollTo(0,0)}
+  else if(e){openEdit(new Date(+e[1],+e[2]-1,+e[3]));$("edit").hidden=false;window.scrollTo(0,0)}
+  else{$("home").hidden=false;$("welcome").hidden=!!load(K.seen,false)&&!showHelp;renderStreak();renderCal();renderLook()}
+}
+$("prev").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);renderCal()};
+$("next").onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);renderCal()};
+$("todayBtn").onclick=()=>{const t=today0();view=new Date(t.getFullYear(),t.getMonth(),1);renderCal()};
+$("back").onclick=()=>{view=new Date(sel.getFullYear(),sel.getMonth(),1);location.hash="home"};
+let armB=false;
+$("eback").onclick=()=>{
+  if(isDirty()&&!armB){armB=true;$("eback").textContent="Discard changes?";setTimeout(()=>{armB=false;$("eback").textContent="‹ Calendar"},4000);return}
+  armB=false;$("eback").textContent="‹ Calendar";location.hash="home";
+};
+$("pd").onclick=()=>{location.hash="day-"+key(addDays(sel,-1))};
+$("nd").onclick=()=>{location.hash="day-"+key(addDays(sel,1))};
+$("editBtn").onclick=()=>{location.hash="edit-"+key(today0())};
+$("editDay").onclick=()=>{location.hash="edit-"+key(sel)};
+$("fs").onchange=e=>{ST.first=+e.target.value;if(ST.last<ST.first)ST.last=ST.first;put(K.set,ST);renderEdit()};
+$("ls").onchange=e=>{ST.last=+e.target.value;if(ST.first>ST.last)ST.first=ST.last;put(K.set,ST);renderEdit()};
+let armI=false;
+$("imp").onclick=()=>{
+  if(!$("paste").value.trim()){$("impMsg").textContent="Paste your schedule or choose a file first.";return}
+  if(!armI){armI=true;$("imp").textContent="Tap again to replace your schedule";setTimeout(()=>{armI=false;$("imp").textContent="Replace my schedule with this"},4000);return}
+  armI=false;$("imp").textContent="Replace my schedule with this";doImport();
+};
+$("file").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$("paste").value=r.result;$("impMsg").textContent="File loaded. Press the button to import it."};r.readAsText(f)};
+let armed=false;
+$("blank").onclick=()=>{
+  if(!armed){armed=true;$("blank").textContent="Tap again to clear everything";setTimeout(()=>{armed=false;$("blank").textContent="Clear my whole schedule"},4000);return}
+  armed=false;$("blank").textContent="Clear my whole schedule";SC={0:{},1:{},2:{},3:{},4:{},5:{},6:{}};OV={};put(K.sched,SC);put(K.ov,OV);$("blankMsg").textContent="Schedule cleared. Type in any hour above to start building it.";openEdit(edDate);
+};
+let showHelp=false;
+$("gotit").onclick=()=>{put(K.seen,true);showHelp=false;$("welcome").hidden=true};
+$("helpBtn").onclick=()=>{showHelp=true;$("welcome").hidden=false;window.scrollTo(0,0)};
+window.addEventListener("hashchange",route);
+applyLook();route();
+</script>
+</body>
+</html>
